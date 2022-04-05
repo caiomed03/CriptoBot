@@ -1,38 +1,43 @@
 import json
 
-from telegram import Update
+import telebot
+from telebot import *
+from telegram import Update, bot
 from telegram.ext import Updater, CommandHandler, CallbackContext
 from criptomoneda import Criptomoneda
 from portafolio import Portafolio
 
 
-# API Key
+
+class Color:
+    RED = '\033[91m'
+    BLUE = '\033[94m'
+    GREEN = '\033[32m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 class Bot:
-    __slots__ = "portafolios"
+    __slots__ = ["portafolios", "botardo"]
 
+    # Constructor
     def __init__(self):
 
         with open("api.json") as jsonFile:
             jsonObject = json.load(jsonFile)
             updater = Updater(jsonObject['Telegram_API'])
+            self.botardo = telebot.TeleBot(jsonObject['Telegram_API'])
             jsonFile.close()
-
         self.portafolios = {}
         self.listeners(updater)
         updater.start_polling()
         updater.idle()
 
-    def listeners(self, updater):
-        updater.dispatcher.add_handler(CommandHandler('start', self.start))
-        updater.dispatcher.add_handler(CommandHandler('cripto', self.cripto))
-        updater.dispatcher.add_handler(CommandHandler('portafolio', self.comandoPortafolio))
-
     # Comando start
     def start(self, update: Update, context: CallbackContext) -> None:
         user = update.message.from_user
         update.message.reply_text(
-            'Bienvenido {} \nPara buscar alguna criptomoneda en especifico tienes que colocar /cripto <SIGLA CRIPTO>'.format(
+            'Bienvenido {}\nPara buscar alguna criptomoneda en especifico tienes que colocar /cripto <SIGLA CRIPTO>'.format(
                 user['username']))
 
     # Comando cripto
@@ -51,6 +56,7 @@ class Bot:
         except KeyError:
             update.message.reply_text('No existe esa cripto')
 
+    # Comando /portafolio
     def comandoPortafolio(self, update: Update, context: CallbackContext):
         try:
             if context.args[0] == 'create':
@@ -91,11 +97,13 @@ class Bot:
             gainLoss7d) + '\nTotal ganado/perdido respecto los últimos 30 dias : ' + str(gainLoss30d)
         update.message.reply_text(msg)
 
+    # Comando /portafolio create <cantidadInvertida€>
     def createPortafolio(self, context, update):
         invested = context.args[1]
         self.portafolios[update.message.from_user['username']] = Portafolio(invested)
         update.message.reply_text('Funciona')
 
+    # Comando /portafolio addInvest <cantidadAñadir€>
     def addInvest(self, context, update):
         self.portafolios[update.message.from_user['username']].incrementInvested(context.args[1])
         update.message.reply_text('Funciona')
@@ -104,5 +112,16 @@ class Bot:
         self.portafolios[update.message.from_user['username']].add(context.args[1])
         update.message.reply_text('Funciona')
 
+    # Listeners
+    def listeners(self, updater):
+        updater.dispatcher.add_handler(CommandHandler('start', self.start))
+        updater.dispatcher.add_handler(CommandHandler('cripto', self.cripto))
+        updater.dispatcher.add_handler(CommandHandler('portafolio', self.comandoPortafolio))
+        updater.dispatcher.add_handler(CommandHandler('s', self.prueba))
+
+    def prueba(self,update: Update, context: CallbackContext):
+        cid = update.message.chat_id
+        update.message.bot.send_message(cid, '__Hasta luego,__ ' + str(update.message.from_user.first_name) + '. Te echaré de menos.', parse_mode = "Markdown")
+        # self.botardo.send_message(cid, '**Hasta luego,** ' + str(update.message.from_user.first_name) + '. Te echaré de menos.')
 
 a = Bot()

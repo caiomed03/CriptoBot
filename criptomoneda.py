@@ -1,3 +1,5 @@
+
+
 from requests import Session
 import json
 
@@ -7,7 +9,7 @@ class Criptomoneda:
                  "percentChange30d")
 
     def __init__(self, name):
-        self.name = name
+        self.name = name.upper()
         self.price = self.setPrice()
         self.fullName = self.setFullName()
         self.market_cap = self.setMarket_Cap()
