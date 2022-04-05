@@ -65,9 +65,10 @@ class Bot:
             update.message.reply_text('Primero debes crear el portafolio: /portafolio create <amount>')
         except IndexError:
             update.message.reply_text('El uso correcto del comando es /portafolio <create|addInvest> <amount>')
-        # except KeyError:
-          #  update.message.reply_text('La criptomoneda que has pasado no existe')
+        except KeyError:
+            update.message.reply_text('La criptomoneda que has pasado no existe')
 
+    # Comando /portafolio show -> Muestra las criptomonedas que has añadido así como la inversión total y la ganancia o pérdida total repartida en el tiempo
     def showPortafolio(self, update):
         msg = ""
         gainLoss1h = 0
@@ -78,10 +79,11 @@ class Bot:
         for x in user.getPortafolio():
             userPortafolio = user.getPortafolio()
             msg += x + " : " + str(userPortafolio[x]['price']) + '\n'
-            gainLoss1h += userPortafolio[x]['price'] * userPortafolio[x]['amount'] - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent1h'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
-            gainLoss24h += userPortafolio[x]['price'] * userPortafolio[x]['amount'] - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent24h'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
-            gainLoss7d += userPortafolio[x]['price'] * userPortafolio[x]['amount'] - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent7d'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
-            gainLoss30d += userPortafolio[x]['price'] * userPortafolio[x]['amount'] - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent30d'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
+            valorActual = userPortafolio[x]['price'] * userPortafolio[x]['amount']
+            gainLoss1h += valorActual - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent1h'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
+            gainLoss24h += valorActual - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent24h'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
+            gainLoss7d += valorActual - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent7d'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
+            gainLoss30d += valorActual - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent30d'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
         msg += 'Total invertido : ' + str(
             user.getTotalInvested()) + '\nTotal ganado/perdido respecto la última hora : ' + str(
             gainLoss1h) + '\nTotal ganado/perdido respecto las últimas 24 horas : ' + str(
