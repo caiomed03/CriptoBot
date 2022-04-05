@@ -9,7 +9,7 @@ from portafolio import Portafolio
 # API Key
 
 class Bot:
-    __slots__ = "portafolio"
+    __slots__ = "portafolios"
 
     def __init__(self):
 
@@ -18,7 +18,7 @@ class Bot:
             updater = Updater(jsonObject['Telegram_API'])
             jsonFile.close()
 
-        self.portafolio = None
+        self.portafolios = {}
         self.listeners(updater)
         updater.start_polling()
         updater.idle()
@@ -65,8 +65,8 @@ class Bot:
             update.message.reply_text('Primero debes crear el portafolio: /portafolio create <amount>')
         except IndexError:
             update.message.reply_text('El uso correcto del comando es /portafolio <create|addInvest> <amount>')
-        except KeyError:
-            update.message.reply_text('La criptomoneda que has pasado no existe')
+        # except KeyError:
+          #  update.message.reply_text('La criptomoneda que has pasado no existe')
 
     def showPortafolio(self, update):
         msg = ""
@@ -74,14 +74,16 @@ class Bot:
         gainLoss24h = 0
         gainLoss7d = 0
         gainLoss30d = 0
-        for x in self.portafolio.getPortafolio():
-            msg += x + " : " + str(self.portafolio.getPortafolio()[x]['price']) + '\n'
-            gainLoss1h += self.portafolio.getPortafolio()[x]['price'] * self.portafolio.getPortafolio()[x]['amount'] - ((self.portafolio.getPortafolio()[x]['price'] - (self.portafolio.getPortafolio()[x]['percent1h'] / 100 * self.portafolio.getPortafolio()[x]['price'])) * self.portafolio.getPortafolio()[x]['amount'])
-            gainLoss24h += self.portafolio.getPortafolio()[x]['price'] * self.portafolio.getPortafolio()[x]['amount'] - ((self.portafolio.getPortafolio()[x]['price'] - (self.portafolio.getPortafolio()[x]['percent24h'] / 100 * self.portafolio.getPortafolio()[x]['price'])) * self.portafolio.getPortafolio()[x]['amount'])
-            gainLoss7d += self.portafolio.getPortafolio()[x]['price'] * self.portafolio.getPortafolio()[x]['amount'] - ((self.portafolio.getPortafolio()[x]['price'] - (self.portafolio.getPortafolio()[x]['percent7d'] / 100 * self.portafolio.getPortafolio()[x]['price'])) * self.portafolio.getPortafolio()[x]['amount'])
-            gainLoss30d += self.portafolio.getPortafolio()[x]['price'] * self.portafolio.getPortafolio()[x]['amount'] - ((self.portafolio.getPortafolio()[x]['price'] - (self.portafolio.getPortafolio()[x]['percent30d'] / 100 * self.portafolio.getPortafolio()[x]['price'])) * self.portafolio.getPortafolio()[x]['amount'])
+        user = self.portafolios[update.message.from_user['username']]
+        for x in user.getPortafolio():
+            userPortafolio = user.getPortafolio()
+            msg += x + " : " + str(userPortafolio[x]['price']) + '\n'
+            gainLoss1h += userPortafolio[x]['price'] * userPortafolio[x]['amount'] - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent1h'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
+            gainLoss24h += userPortafolio[x]['price'] * userPortafolio[x]['amount'] - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent24h'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
+            gainLoss7d += userPortafolio[x]['price'] * userPortafolio[x]['amount'] - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent7d'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
+            gainLoss30d += userPortafolio[x]['price'] * userPortafolio[x]['amount'] - ((userPortafolio[x]['price'] - (userPortafolio[x]['percent30d'] / 100 * userPortafolio[x]['price'])) * userPortafolio[x]['amount'])
         msg += 'Total invertido : ' + str(
-            self.portafolio.getTotalInvested()) + '\nTotal ganado/perdido respecto la última hora : ' + str(
+            user.getTotalInvested()) + '\nTotal ganado/perdido respecto la última hora : ' + str(
             gainLoss1h) + '\nTotal ganado/perdido respecto las últimas 24 horas : ' + str(
             gainLoss24h) + '\nTotal ganado/perdido respecto los últimos 7 dias : ' + str(
             gainLoss7d) + '\nTotal ganado/perdido respecto los últimos 30 dias : ' + str(gainLoss30d)
@@ -89,15 +91,15 @@ class Bot:
 
     def createPortafolio(self, context, update):
         invested = context.args[1]
-        self.portafolio = Portafolio(invested)
+        self.portafolios[update.message.from_user['username']] = Portafolio(invested)
         update.message.reply_text('Funciona')
 
     def addInvest(self, context, update):
-        self.portafolio.incrementInvested(context.args[1])
+        self.portafolios[update.message.from_user['username']].incrementInvested(context.args[1])
         update.message.reply_text('Funciona')
 
     def addCripto(self, context, update):
-        self.portafolio.add(context.args[1])
+        self.portafolios[update.message.from_user['username']].add(context.args[1])
         update.message.reply_text('Funciona')
 
 

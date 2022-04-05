@@ -2,11 +2,10 @@ from criptomoneda import Criptomoneda
 
 
 class Portafolio:
-    __slots__ = ["totalInvested"]
-    criptos = {}
+    __slots__ = ["totalInvested", "criptos"]
 
     def __init__(self, totalInvested):
-        criptos = {}
+        self.criptos = {}
         self.totalInvested = float(totalInvested)
 
     def add(self, cripto):
